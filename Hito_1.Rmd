@@ -14,6 +14,14 @@ output:
 
 # Introducción
 
+La velocidad ha despertado desde hace mucho tiempo una gran cantidad de pasiones, desde la antigüedad el ser humano ha ha intentado desplazarse lo más rápido y eficientemente posible desde un sitio a otro. Inicialmente, los desplazamientos por tierra más rapidos se realizaron mediante la domesticación de algunos animales como el caballo o camello, sin embargo no fue hasta el siglo XIX donde se pudo dar un gran salto en los medios de transporte con la invención de la locomotora y la aparición de los primeros vehiculos. Este crecimiento se hizo excepcional con la invención del motor de combustión interna por parte del alemán Nikolaus Otto en 1886.
+
+El motor de combustión interna permitió la fabricación de toda clase de vehiculos como motocicletas, automoviles, camionetas, camiones, aviones, etc. Dentro de toda esta clase de máquinas tambien se desarrollaron los automóviles de carreras con la finalidad de realizar competiciones entre los distintos fabricantes de vehiculos.
+
+Dentro de las competiciones de automoviles, destaca el campeonato mundial de la fórmula 1 de la FIA mas conocida como la fórmula 1 o F1. Esta corresponde a la máxima competición automovilstica de todo el mundo, ademas de ser el deporte motor mas prestigioso de todo el orbe. Dada la importancia de este evento y la cantidad de dinero que mueve actualmente, los datos relacionados a los circuitos, caracteristicas de los automóviles, información de los pilotos, etc corresponde a información interesante de analizar. Dado esto, para el proyecto semestral del curso se utilizaran distintos tipos de información relacionada a esta competición con la finalidad de encontrar comportamientos no intuitivos en estas bases de datos. Con esots patrones se pueden desarrollar modelos que pueden llegar a estimar una gran cantidad de enventos futuros
+
+Utilizando la data se espera obtener un sistema donde se encuentre (*Insertar hipotesis*) y verificar su comportamiento, para esto se desarrollara el siguiente avance donde inicialmente se mostrará la forma que tienen los datos y analizando el tipo de información que contiene entonces se gráficaran distintos tipos de datos.
+
 
 # Descripción de los datos y exploración inicial.
 
