@@ -1,0 +1,32 @@
+---
+title: 'Exploración de datos de carreras de formula 1.'
+date: "Abril 2020"
+author: ''
+output:
+  html_document:
+    theme: default
+    toc: no
+  pdf_document:
+    toc: no
+---
+
+### Integrantes: Ignacio Moore - José Rubio Fabián Sepúlveda
+
+# Introducción
+
+
+# Descripción de los datos y exploración inicial.
+
+
+
+# Temática del problema.
+
+
+
+# Contribuciones de los miembros del equipo
+
+
+
+
+
+
