@@ -64,6 +64,7 @@ countryNationalities <- read.csv(file = "Data/countryNationalities.csv", header 
 
 
 ```{r}
+
 # CANTIDAD DE CORREDORES POR PAIS
 
 numberOfDriversByNationality <- aggregate(driverId ~ nationality, drivers, length)
@@ -82,6 +83,7 @@ ggplot(numberOfDriversByNationality) +
 
 
 ```{r}
+
 # CANTIDAD DE CARRERAS POR PAIS
 
 racesByCircuit <- merge(circuits, races, by = "circuitId")
@@ -102,6 +104,33 @@ ggplot(numberOfRacesByCountry) +
 
 
 ```{r}
+
+# CARRERAS EN QUE COINCIDEN CON CONDUCTORES
+
+driversWithCountry <- merge(drivers, countryNationalities, by = "nationality")
+names(driversWithCountry)[names(driversWithCountry) == "country"] <- "driverCountry"
+
+homeDrivers <- merge(merge(driversWithCountry, results, by = "driverId"), racesByCircuit, by = "raceId")
+names(homeDrivers)[names(homeDrivers) == "country"] <- "circuitCountry"
+
+names(homeDrivers)
+
+homeDrivers <- subset(homeDrivers, select = c("driverCountry", "circuitCountry", "driverRef", "raceName", "circuitName", "raceId", "driverId"))
+
+homeDrivers[,1] <- factor(homeDrivers[,1], levels = levels(homeDrivers[,2]))
+
+homeDrivers <- subset(homeDrivers, homeDrivers$circuitCountry == homeDrivers$driverCountry)
+
+homeDriversByCountry <- aggregate(raceId + driverId ~ circuitCountry, homeDrivers, length)
+names(homeDriversByCountry)[names(homeDriversByCountry) == "raceId + driverId"] <- "numberOfParticipations"
+
+names(homeDriversByCountry)
+
+ggplot(homeDriversByCountry) +
+  geom_bar(aes(x = reorder(circuitCountry, numberOfParticipations), y = numberOfParticipations), stat = "identity") +
+  coord_flip() +
+  ggtitle("Cantidad de veces que Conductores han Participado en su Pais") +
+  xlab("Pais") + ylab("Cantidad de veces que han participado")
 
 ```
 
