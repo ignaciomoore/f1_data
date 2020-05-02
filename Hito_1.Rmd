@@ -62,7 +62,6 @@ status <- read.csv(file = "Data/status.csv", header = TRUE)
 
 
 ```{r}
-
 # CANTIDAD DE CORREDORES POR PAIS
 
 numberOfDriversByNationality <- aggregate(driverId ~ nationality, drivers, length)
@@ -76,6 +75,11 @@ ggplot(numberOfDriversByNationality) +
   ggtitle("Cantidad de Conductores por Nacionalidad") +
   xlab("Nacionalidad") + ylab("Cantidad de Conductores")
 
+```
+
+
+
+```{r}
 # CANTIDAD DE CARRERAS POR PAIS
 
 racesByCircuit <- merge(circuits, races, by = "circuitId")
