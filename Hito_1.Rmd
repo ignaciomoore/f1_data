@@ -27,14 +27,19 @@ Utilizando la data se espera obtener un sistema donde se encuentre (*Insertar hi
 
 ```{r}
 circuits <- read.csv(file = "Data/circuits.csv", header = TRUE)
+circuits$url <- NULL
 
 constructorResults <- read.csv(file = "Data/constructorResults.csv", header = TRUE)
 
-constructorS <- read.csv(file = "Data/constructors.csv", header = TRUE)
+constructors <- read.csv(file = "Data/constructors.csv", header = TRUE)
+constructors$X <- NULL
+constructors$url <- NULL
 
 constructorStandings <- read.csv(file = "Data/constructorStandings.csv", header = TRUE)
+constructorStandings$X <- NULL
 
 drivers <- read.csv(file = "Data/drivers.csv", header = TRUE)
+drivers$url <- NULL
 
 driverStandings <- read.csv(file = "Data/driverStandings.csv", header = TRUE)
 
@@ -45,13 +50,49 @@ pitStops <- read.csv(file = "Data/pitStops.csv", header = TRUE)
 qualifying <- read.csv(file = "Data/qualifying.csv", header = TRUE)
 
 races <- read.csv(file = "Data/races.csv", header = TRUE)
+races$url <- NULL
 
 results <- read.csv(file = "Data/results.csv", header = TRUE)
 
 seasons <- read.csv(file = "Data/seasons.csv", header = TRUE)
+seasons$url <- NULL
 
 status <- read.csv(file = "Data/status.csv", header = TRUE)
 ```
+
+
+```{r}
+
+# CANTIDAD DE CORREDORES POR PAIS
+
+numberOfDriversByNationality <- aggregate(driverId ~ nationality, drivers, length)
+names(numberOfDriversByNationality)[names(numberOfDriversByNationality) == 'driverId'] <- 'numberOfDrivers'
+
+library(ggplot2)
+
+ggplot(numberOfDriversByNationality) +
+  geom_bar(aes(x = reorder(nationality, numberOfDrivers), y = numberOfDrivers), stat = "identity") +
+  coord_flip() +
+  ggtitle("Cantidad de Conductores por Nacionalidad") +
+  xlab("Nacionalidad") + ylab("Cantidad de Conductores")
+
+# CANTIDAD DE CARRERAS POR PAIS
+
+racesByCircuit <- merge(circuits, races, by = "circuitId")
+names(racesByCircuit)[names(racesByCircuit) == "name.x"] <- "circuitName"
+names(racesByCircuit)[names(racesByCircuit) == "name.y"] <- "raceName"
+
+numberOfRacesByCountry <- aggregate(raceId ~ country, racesByCircuit, length)
+names(numberOfRacesByCountry)[names(numberOfRacesByCountry) == "raceId"] <- "numberOfRaces"
+
+ggplot(numberOfRacesByCountry) +
+  geom_bar(aes(x = reorder(country, numberOfRaces), y = numberOfRaces), stat = "identity") +
+  coord_flip() +
+  ggtitle("Cantidad de Carreras por Pais") +
+  xlab("Pais") + ylab("Cantidad de Carreras")
+
+```
+
 
 # Temática del problema.
 
