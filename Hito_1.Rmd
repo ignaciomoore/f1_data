@@ -58,6 +58,8 @@ seasons <- read.csv(file = "Data/seasons.csv", header = TRUE)
 seasons$url <- NULL
 
 status <- read.csv(file = "Data/status.csv", header = TRUE)
+
+countryNationalities <- read.csv(file = "Data/countryNationalities.csv", header = TRUE)
 ```
 
 
@@ -97,6 +99,11 @@ ggplot(numberOfRacesByCountry) +
 
 ```
 
+
+
+```{r}
+
+```
 
 # Temática del problema.
 
