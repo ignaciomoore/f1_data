@@ -134,6 +134,12 @@ ggplot(homeDriversByCountry) +
 
 ```
 
+
+```{r}
+d_nationality <-drivers[,c('driverId','driverRef','nationality')]
+d_nationality <- merge(d_nationality, countryNationality, by='nationality' )
+```
+
 ### Ganadores por país.
 Filtrando los resultados para obtener las nacionalidades de aquellos conductores que ganaron los circuitos.
 ```{r}
