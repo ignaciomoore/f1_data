@@ -133,14 +133,20 @@ ggplot(homeDriversByCountry) +
   xlab("Pais") + ylab("Cantidad de veces que han participado")
 
 ```
+
+```{r}
+countryNationality <- read.csv(file="Data/countryNationalities.csv",header=TRUE)
+```
+
 Creando dataframes para incluir el país de la nacionalidad mencionada.
 
 ```{r}
 d_nationality <-drivers[,c('driverId','driverRef','nationality')]
 d_nationality <- merge(d_nationality, countryNationality, by='nationality' )
-c_nationality <- constructorS[, c("constructorId", "name", "nationality")]
+c_nationality <- constructors[, c("constructorId", "name", "nationality")]
 c_nationality <- merge(c_nationality, countryNationality, by="nationality")
-c_nationality
+names(c_nationality)[names(c_nationality) == "nationality"] <- "c_nationality"
+names(c_nationality)[names(c_nationality) == "country"] <- "c_country"
 ```
 
 ### Ganadores por país.
@@ -163,10 +169,10 @@ Similar al anterior, solo que en este caso se realiza la consulta para obtener l
 
 ```{r}
 winners_constructors <- merge(winners,c_nationality, by='constructorId')
-winnersc_by_country <- aggregate(position ~ country, winners_constructors, length)
+winnersc_by_country <- aggregate(position ~ c_country, winners_constructors, length)
 names(winnersc_by_country)[names(winnersc_by_country) == "position"] <- "races_won"
 ggplot(winnersc_by_country) +
-  geom_bar(aes(x=reorder(country, races_won),y=races_won),stat="identity") +
+  geom_bar(aes(x=reorder(c_country, races_won),y=races_won),stat="identity") +
   coord_flip() +
   ggtitle("Paises Fabricantes Ganadores de la formula 1") +
   xlab("Cantidad") +
