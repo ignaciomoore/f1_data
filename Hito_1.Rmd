@@ -25,6 +25,8 @@ Utilizando la data se espera obtener un sistema donde se encuentre (*Insertar hi
 
 # Descripción de los datos y exploración inicial.
 
+### Importacion de Tablas
+
 ```{r}
 circuits <- read.csv(file = "Data/circuits.csv", header = TRUE)
 circuits$url <- NULL
@@ -63,6 +65,11 @@ countryNationalities <- read.csv(file = "Data/countryNationalities.csv", header 
 ```
 
 
+### Cantidad de Conductores por Pais
+
+Aqui se analisa cual es la cantidad de pilotos de formula uno que ha tenido cada pais. Esto es para despues ver a que paises se puede hacer un mejor analisis, ya que tienen mas datos.
+
+
 ```{r}
 
 # CANTIDAD DE CORREDORES POR PAIS
@@ -80,6 +87,10 @@ ggplot(numberOfDriversByNationality) +
 
 ```
 
+
+### Cantidad de Carreras por Pais
+
+Se ve que paises han participado por mayor cantidad de tiempo en formula uno, esto tambien es para ver donde hay una mayor muestra de datos.
 
 
 ```{r}
@@ -102,6 +113,10 @@ ggplot(numberOfRacesByCountry) +
 ```
 
 
+### Participacion de Conductores en sus paises
+
+La idea es ver la cantidad de veces en que coincide que la nacionalidad de un conductor es igual al pais en que se anfitriona la carrera.
+
 
 ```{r}
 
@@ -113,8 +128,6 @@ names(driversWithCountry)[names(driversWithCountry) == "country"] <- "driverCoun
 homeDrivers <- merge(merge(driversWithCountry, results, by = "driverId"), racesByCircuit, by = "raceId")
 names(homeDrivers)[names(homeDrivers) == "country"] <- "circuitCountry"
 
-names(homeDrivers)
-
 homeDrivers <- subset(homeDrivers, select = c("driverCountry", "circuitCountry", "driverRef", "raceName", "circuitName", "raceId", "driverId"))
 
 homeDrivers[,1] <- factor(homeDrivers[,1], levels = levels(homeDrivers[,2]))
@@ -124,8 +137,6 @@ homeDrivers <- subset(homeDrivers, homeDrivers$circuitCountry == homeDrivers$dri
 homeDriversByCountry <- aggregate(raceId + driverId ~ circuitCountry, homeDrivers, length)
 names(homeDriversByCountry)[names(homeDriversByCountry) == "raceId + driverId"] <- "numberOfParticipations"
 
-names(homeDriversByCountry)
-
 ggplot(homeDriversByCountry) +
   geom_bar(aes(x = reorder(circuitCountry, numberOfParticipations), y = numberOfParticipations), stat = "identity") +
   coord_flip() +
@@ -133,6 +144,8 @@ ggplot(homeDriversByCountry) +
   xlab("Pais") + ylab("Cantidad de veces que han participado")
 
 ```
+
+
 
 ```{r}
 countryNationality <- read.csv(file="Data/countryNationalities.csv",header=TRUE)
