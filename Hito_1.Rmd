@@ -176,6 +176,36 @@ Los comportamientos obtenidos entregan una fuerte dominación por parte de los p
 
 # Temática del problema.
 
+Se desea encontrar diferentes relaciones entre las victorias de las marcas fabricantes, nacionalidades de los competidores y lugar de la carrera, para conocer que país y fabricante tiene dominio en la competencia de cada área. Por ejemplo en el siguiente gráfico se ve cuantos países han ganado en un circuito realizado en Italia.
+
+```{r}
+Italian_races <- racesByCircuit[racesByCircuit$country == "Italy",]
+Italian_races_winners <- merge(Italian_races, winners, by="raceId")
+Italian_races_winners <- Italian_races_winners[,c("driverId","constructorId","position")]
+Italian_races_winners <- merge(Italian_races_winners, d_nationality, by="driverId")
+Italian_races_winners <- merge(Italian_races_winners, c_nationality, by="constructorId")
+Italian_d_Nationality_winners <- aggregate(position ~ country, Italian_races_winners, length)
+Italian_c_Nationality_winners <- aggregate(position ~ c_country, Italian_races_winners, length)
+names(Italian_d_Nationality_winners)[names(Italian_d_Nationality_winners) == "position"] <- "races_won"
+names(Italian_c_Nationality_winners)[names(Italian_c_Nationality_winners) == "position"] <- "races_won"
+ggplot(Italian_d_Nationality_winners)+
+  geom_bar(aes(x=reorder(country,races_won),y=races_won),stat = "identity")+
+  ggtitle("Paises ganadores en Italia")+
+  coord_flip()+
+  xlab("País")+
+  ylab("Cantidad de victorias")
+
+```
+Gráfico con los países fabricantes ganadores en Italia
+```{r}
+ggplot(Italian_c_Nationality_winners)+
+  geom_bar(aes(x=reorder(c_country,races_won),y=races_won),stat = "identity")+
+  ggtitle("Paises fabricantes ganadores en Italia")+
+  coord_flip()+
+  xlab("País")+
+  ylab("Cantidad de victorias")
+```
+Se espera tener gráficos de esta forma para averiguar si existe alguna relación entre la nacionalidad del piloto y el lugar donde se realiza la carrera. Para este caso se tiene que para los circuitos desarrollados en Italia, se ve claramente que los competidores y vehiculos britanicos poseen una gran cantidad de victorias. Tambien se desea ver si ha existido dominio de otro país en alguna época. Para ello se realizaran diversas consultas en los dataframes con la finalidad de encontrar comportamientos que apoyen o refuten esta hipótesis.
 
 
 # Contribuciones de los miembros del equipo
