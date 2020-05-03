@@ -153,7 +153,7 @@ names(c_nationality)[names(c_nationality) == "country"] <- "c_country"
 Filtrando los resultados para obtener las nacionalidades de aquellos conductores que ganaron los circuitos.
 ```{r}
 winners <- results[results$positionOrder == 1,]
-winners_data <- merge(winners,nationality, by='driverId')
+winners_data <- merge(winners,d_nationality, by='driverId')
 winners_by_country <- aggregate(position ~ country, winners_data, length)
 names(winners_by_country)[names(winners_by_country) == "position"] <- "races_won"
 ggplot(winners_by_country) +
