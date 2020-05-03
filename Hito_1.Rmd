@@ -134,6 +134,24 @@ ggplot(homeDriversByCountry) +
 
 ```
 
+### Ganadores por país.
+Filtrando los resultados para obtener las nacionalidades de aquellos conductores que ganaron los circuitos.
+```{r}
+winners <- results[results$positionOrder == 1,]
+winners_data <- merge(winners,nationality, by='driverId')
+winners_by_country <- aggregate(position ~ country, winners_data, length)
+names(winners_by_country)[names(winners_by_country) == "position"] <- "races_won"
+ggplot(winners_by_country) +
+  geom_bar(aes(x=reorder(country, races_won),y=races_won),stat="identity") +
+  coord_flip() +
+  ggtitle("Paises Ganadores de la formula 1") +
+  xlab("Cantidad") +
+  ylab("País")
+```
+
+### Fabricantes ganadores por país.
+Similar al anterior, salvo que en este caso se obtendra el id de los fabricantes ganadores.
+
 # Temática del problema.
 
 
