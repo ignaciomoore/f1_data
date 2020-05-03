@@ -133,11 +133,14 @@ ggplot(homeDriversByCountry) +
   xlab("Pais") + ylab("Cantidad de veces que han participado")
 
 ```
-
+Creando dataframes para incluir el país de la nacionalidad mencionada.
 
 ```{r}
 d_nationality <-drivers[,c('driverId','driverRef','nationality')]
 d_nationality <- merge(d_nationality, countryNationality, by='nationality' )
+c_nationality <- constructorS[, c("constructorId", "name", "nationality")]
+c_nationality <- merge(c_nationality, countryNationality, by="nationality")
+c_nationality
 ```
 
 ### Ganadores por país.
@@ -156,7 +159,20 @@ ggplot(winners_by_country) +
 ```
 
 ### Fabricantes ganadores por país.
-Similar al anterior, salvo que en este caso se obtendra el id de los fabricantes ganadores.
+Similar al anterior, solo que en este caso se realiza la consulta para obtener las nacionalidades de los países que fabrican los vehiculos para la competición.
+
+```{r}
+winners_constructors <- merge(winners,c_nationality, by='constructorId')
+winnersc_by_country <- aggregate(position ~ country, winners_constructors, length)
+names(winnersc_by_country)[names(winnersc_by_country) == "position"] <- "races_won"
+ggplot(winnersc_by_country) +
+  geom_bar(aes(x=reorder(country, races_won),y=races_won),stat="identity") +
+  coord_flip() +
+  ggtitle("Paises Fabricantes Ganadores de la formula 1") +
+  xlab("Cantidad") +
+  ylab("País")
+```
+Los comportamientos obtenidos entregan una fuerte dominación por parte de los pilotos y vehiculos británicos Especialmente los fabricantes del Reino unido, cuyos vehiculos han ganado mas de la mitad de las competiciones (492 de 979 carreras, un 50,25%).
 
 # Temática del problema.
 
