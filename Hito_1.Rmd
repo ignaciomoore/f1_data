@@ -229,6 +229,10 @@ Se espera tener gráficos de esta forma para averiguar si existe alguna relació
 
 # Contribuciones de los miembros del equipo
 
+En conjunto se escogio la hipotesis a enfrentar en este proyecto .
+
+Ignacio Moore estuvo a cargo de la importacion y limpieza de datos, tambien realizo el analisis de los primeros tres graficos.
+
 
 
 
