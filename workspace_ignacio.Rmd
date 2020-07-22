@@ -1,0 +1,101 @@
+---
+title: "Exploration"
+author: "Ignacio Moore"
+date: "16/07/2020"
+output: html_document
+---
+
+```{r}
+circuits <- read.csv(file = "Data/circuits.csv", header = TRUE)
+circuits$url <- NULL
+
+constructorResults <- read.csv(file = "Data/constructorResults.csv", header = TRUE)
+constructorResults$status <- NULL
+
+constructors <- read.csv(file = "Data/constructors.csv", header = TRUE)
+constructors$X <- NULL
+constructors$url <- NULL
+
+constructorStandings <- read.csv(file = "Data/constructorStandings.csv", header = TRUE)
+constructorStandings$X <- NULL
+constructorStandings$positionText <- NULL
+
+drivers <- read.csv(file = "Data/drivers.csv", header = TRUE)
+drivers$url <- NULL
+
+driverStandings <- read.csv(file = "Data/driverStandings.csv", header = TRUE)
+driverStandings$positionText <- NULL
+
+lapTimes <- read.csv(file = "Data/lapTimes.csv", header = TRUE)
+
+pitStops <- read.csv(file = "Data/pitStops.csv", header = TRUE)
+
+qualifying <- read.csv(file = "Data/qualifying.csv", header = TRUE)
+
+races <- read.csv(file = "Data/races.csv", header = TRUE)
+races$url <- NULL
+
+results <- read.csv(file = "Data/results.csv", header = TRUE)
+results$positionText <- NULL
+
+status <- read.csv(file = "Data/status.csv", header = TRUE)
+
+countryNationalities <- read.csv(file = "Data/countryNationalities.csv", header = TRUE)
+```
+
+
+
+```{r cars}
+#names(circuits)
+#names(constructorResults)
+#names(constructors)
+#names(constructorStandings)
+#names(drivers)
+#names(driverStandings)
+#names(lapTimes)
+#names(pitStops)
+#names(qualifying) #Whats the number? Driver Number? Number of laps?#
+#names(races)
+#names(results) #Again number? grid = starting grid? position == positionOrder? time is wierd, maybe better to remove. Rank? statusId?# 
+#names(status)
+
+```
+
+
+
+```{r}
+races_pitStops <- merge(races, pitStops, by = "raceId")
+names(races_pitStops)[names(races_pitStops) == "time.x"] <- "raceTime"
+names(races_pitStops)[names(races_pitStops) == "time.y"] <- "pitTime"
+races_pitStops_drivers <- merge(races_pitStops, drivers, by = "driverId")
+races_pitStops_drivers_results <- merge(races_pitStops_drivers, results, by = c("raceId", "driverId"))
+names(races_pitStops_drivers_results)[names(races_pitStops_drivers_results) == "number.x"] <- "driverNumber"
+names(races_pitStops_drivers_results)[names(races_pitStops_drivers_results) == "number.y"] <- "resultNumber"
+names(races_pitStops_drivers_results)[names(races_pitStops_drivers_results) == "milliseconds.x"] <- "pitStopMilliseconds"
+names(races_pitStops_drivers_results)[names(races_pitStops_drivers_results) == "milliseconds.y"] <- "resultsMilliseconds"
+races_pitStops_drivers_results_constructors <- merge(races_pitStops_drivers_results, constructors, by = "constructorId")
+names(races_pitStops_drivers_results_constructors)[names(races_pitStops_drivers_results_constructors) == "nationality.x"] <- "driverNationality"
+names(races_pitStops_drivers_results_constructors)[names(races_pitStops_drivers_results_constructors) == "nationality.y"] <- "constructorNationality"
+names(races_pitStops_drivers_results_constructors)[names(races_pitStops_drivers_results_constructors) == "name.x"] <- "raceName"
+names(races_pitStops_drivers_results_constructors)[names(races_pitStops_drivers_results_constructors) == "name.y"] <- "constructorName"
+races_pitStops_drivers_results_constructors_circuits <- merge(races_pitStops_drivers_results_constructors, circuits, by = "circuitId")
+names(races_pitStops_drivers_results_constructors_circuits)[names(races_pitStops_drivers_results_constructors_circuits) == "name"] <- "circuitName"
+
+
+rpdrcc <- races_pitStops_drivers_results_constructors_circuits[, c("circuitRef", "circuitName", "stop", "lap", "year", "constructorName")]
+rpdrcc <- rpdrcc[(rpdrcc$stop == 1 & rpdrcc$year == 2017 & rpdrcc$circuitRef == "monza"),]
+unique(rpdrcc$circuitName)
+plot(rpdrcc$constructorName, rpdrcc$lap, xlab="Constructor", ylab="Lap", main="First Pit Stop Lap in Monza 2017")
+```
+
+```{r}
+library(dplyr)
+?group_by
+
+by_circiuit <- group_by(races_pitStops_drivers_results_constructors_circuits, .dots=c("circuitId", "circuitName", "stop"))
+
+av_lap_for_pitStop <- summarize(by_circiuit, mean_pit_lap=mean(lap))
+av_lap_for_pitStop
+
+
+```
