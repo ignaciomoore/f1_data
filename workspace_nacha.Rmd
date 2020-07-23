@@ -1,0 +1,240 @@
+---
+title: 'Exploración de datos de carreras de formula 1.'
+date: "Abril 2020"
+author: ''
+output:
+  html_document:
+    theme: default
+    toc: no
+  pdf_document:
+    toc: no
+---
+
+### Integrantes: Ignacio Moore - José Rubio Fabián Sepúlveda
+
+# Introducción
+
+La velocidad ha despertado desde hace mucho tiempo una gran cantidad de pasiones, desde la antigüedad el ser humano ha ha intentado desplazarse lo más rápido y eficientemente posible desde un sitio a otro. Inicialmente, los desplazamientos por tierra más rapidos se realizaron mediante la domesticación de algunos animales como el caballo o camello, sin embargo no fue hasta el siglo XIX donde se pudo dar un gran salto en los medios de transporte con la invención de la locomotora y la aparición de los primeros vehiculos. Este crecimiento se hizo excepcional con la invención del motor de combustión interna por parte del alemán Nikolaus Otto en 1886.
+
+El motor de combustión interna permitió la fabricación de toda clase de vehiculos como motocicletas, automoviles, camionetas, camiones, aviones, etc. Dentro de toda esta clase de máquinas tambien se desarrollaron los automóviles de carreras con la finalidad de realizar competiciones entre los distintos fabricantes de vehiculos.
+
+Dentro de las competiciones de automoviles, destaca el campeonato mundial de la fórmula 1 de la FIA mas conocida como la fórmula 1 o F1. Esta corresponde a la máxima competición automovilstica de todo el mundo, ademas de ser el deporte motor mas prestigioso de todo el orbe. Dada la importancia de este evento y la cantidad de dinero que mueve actualmente, los datos relacionados a los circuitos, caracteristicas de los automóviles, información de los pilotos, etc corresponde a información interesante de analizar. Dado esto, para el proyecto semestral del curso se utilizaran distintos tipos de información relacionada a esta competición con la finalidad de encontrar comportamientos no intuitivos en estas bases de datos. Con esots patrones se pueden desarrollar modelos que pueden llegar a estimar una gran cantidad de enventos futuros
+
+Utilizando la data se espera obtener un sistema donde se encuentre (*Insertar hipotesis*) y verificar su comportamiento, para esto se desarrollara el siguiente avance donde inicialmente se mostrará la forma que tienen los datos y analizando el tipo de información que contiene entonces se gráficaran distintos tipos de datos.
+
+
+# Descripción de los datos y exploración inicial.
+
+### Importacion de Tablas
+
+```{r}
+circuits <- read.csv(file = "Data/circuits.csv", header = TRUE)
+circuits$url <- NULL
+
+constructorResults <- read.csv(file = "Data/constructorResults.csv", header = TRUE)
+
+constructors <- read.csv(file = "Data/constructors.csv", header = TRUE)
+constructors$X <- NULL
+constructors$url <- NULL
+
+constructorStandings <- read.csv(file = "Data/constructorStandings.csv", header = TRUE)
+constructorStandings$X <- NULL
+
+drivers <- read.csv(file = "Data/drivers.csv", header = TRUE)
+drivers$url <- NULL
+
+driverStandings <- read.csv(file = "Data/driverStandings.csv", header = TRUE)
+
+lapTimes <- read.csv(file = "Data/lapTimes.csv", header = TRUE)
+
+pitStops <- read.csv(file = "Data/pitStops.csv", header = TRUE)
+
+qualifying <- read.csv(file = "Data/qualifying.csv", header = TRUE)
+
+races <- read.csv(file = "Data/races.csv", header = TRUE)
+races$url <- NULL
+
+results <- read.csv(file = "Data/results.csv", header = TRUE)
+
+seasons <- read.csv(file = "Data/seasons.csv", header = TRUE)
+seasons$url <- NULL
+
+status <- read.csv(file = "Data/status.csv", header = TRUE)
+
+countryNationalities <- read.csv(file = "Data/countryNationalities.csv", header = TRUE)
+```
+
+
+### Cantidad de Conductores por Pais
+
+Aqui se analisa cual es la cantidad de pilotos de formula uno que ha tenido cada pais. Esto es para despues ver a que paises se puede hacer un mejor analisis, ya que tienen mas datos.
+
+
+```{r}
+
+# CANTIDAD DE CORREDORES POR PAIS
+
+numberOfDriversByNationality <- aggregate(driverId ~ nationality, drivers, length)
+names(numberOfDriversByNationality)[names(numberOfDriversByNationality) == 'driverId'] <- 'numberOfDrivers'
+
+library(ggplot2)
+
+ggplot(numberOfDriversByNationality) +
+  geom_bar(aes(x = reorder(nationality, numberOfDrivers), y = numberOfDrivers), stat = "identity") +
+  coord_flip() +
+  ggtitle("Cantidad de Conductores por Nacionalidad") +
+  xlab("Nacionalidad") + ylab("Cantidad de Conductores")
+
+```
+
+
+### Cantidad de Carreras por Pais
+
+Se ve que paises han participado por mayor cantidad de tiempo en formula uno, esto tambien es para ver donde hay una mayor muestra de datos.
+
+
+```{r}
+
+# CANTIDAD DE CARRERAS POR PAIS
+
+racesByCircuit <- merge(circuits, races, by = "circuitId")
+names(racesByCircuit)[names(racesByCircuit) == "name.x"] <- "circuitName"
+names(racesByCircuit)[names(racesByCircuit) == "name.y"] <- "raceName"
+
+numberOfRacesByCountry <- aggregate(raceId ~ country, racesByCircuit, length)
+names(numberOfRacesByCountry)[names(numberOfRacesByCountry) == "raceId"] <- "numberOfRaces"
+
+ggplot(numberOfRacesByCountry) +
+  geom_bar(aes(x = reorder(country, numberOfRaces), y = numberOfRaces), stat = "identity") +
+  coord_flip() +
+  ggtitle("Cantidad de Carreras por Pais") +
+  xlab("Pais") + ylab("Cantidad de Carreras")
+
+```
+
+
+### Participacion de Conductores en sus paises
+
+La idea es ver la cantidad de veces en que coincide que la nacionalidad de un conductor es igual al pais en que se anfitriona la carrera.
+
+
+```{r}
+
+# CARRERAS EN QUE COINCIDEN CON CONDUCTORES
+
+driversWithCountry <- merge(drivers, countryNationalities, by = "nationality")
+names(driversWithCountry)[names(driversWithCountry) == "country"] <- "driverCountry"
+
+homeDrivers <- merge(merge(driversWithCountry, results, by = "driverId"), racesByCircuit, by = "raceId")
+names(homeDrivers)[names(homeDrivers) == "country"] <- "circuitCountry"
+
+homeDrivers <- subset(homeDrivers, select = c("driverCountry", "circuitCountry", "driverRef", "raceName", "circuitName", "raceId", "driverId"))
+
+homeDrivers[,1] <- factor(homeDrivers[,1], levels = levels(homeDrivers[,2]))
+
+homeDrivers <- subset(homeDrivers, homeDrivers$circuitCountry == homeDrivers$driverCountry)
+
+homeDriversByCountry <- aggregate(raceId + driverId ~ circuitCountry, homeDrivers, length)
+names(homeDriversByCountry)[names(homeDriversByCountry) == "raceId + driverId"] <- "numberOfParticipations"
+
+ggplot(homeDriversByCountry) +
+  geom_bar(aes(x = reorder(circuitCountry, numberOfParticipations), y = numberOfParticipations), stat = "identity") +
+  coord_flip() +
+  ggtitle("Cantidad de veces que Conductores han Participado en su Pais") +
+  xlab("Pais") + ylab("Cantidad de veces que han participado")
+
+```
+
+
+
+```{r}
+countryNationality <- read.csv(file="Data/countryNationalities.csv",header=TRUE)
+```
+
+Creando dataframes para incluir el país de la nacionalidad mencionada.
+
+```{r}
+d_nationality <-drivers[,c('driverId','driverRef','nationality')]
+d_nationality <- merge(d_nationality, countryNationality, by='nationality' )
+c_nationality <- constructors[, c("constructorId", "name", "nationality")]
+c_nationality <- merge(c_nationality, countryNationality, by="nationality")
+names(c_nationality)[names(c_nationality) == "nationality"] <- "c_nationality"
+names(c_nationality)[names(c_nationality) == "country"] <- "c_country"
+```
+
+### Ganadores por país.
+Filtrando los resultados para obtener las nacionalidades de aquellos conductores que ganaron los circuitos.
+```{r}
+winners <- results[results$positionOrder == 1,]
+winners_data <- merge(winners,d_nationality, by='driverId')
+winners_by_country <- aggregate(position ~ country, winners_data, length)
+names(winners_by_country)[names(winners_by_country) == "position"] <- "races_won"
+ggplot(winners_by_country) +
+  geom_bar(aes(x=reorder(country, races_won),y=races_won),stat="identity") +
+  coord_flip() +
+  ggtitle("Paises Ganadores de la formula 1") +
+  xlab("Cantidad") +
+  ylab("País")
+```
+
+### Fabricantes ganadores por país.
+Similar al anterior, solo que en este caso se realiza la consulta para obtener las nacionalidades de los países que fabrican los vehiculos para la competición.
+
+```{r}
+winners_constructors <- merge(winners,c_nationality, by='constructorId')
+winnersc_by_country <- aggregate(position ~ c_country, winners_constructors, length)
+names(winnersc_by_country)[names(winnersc_by_country) == "position"] <- "races_won"
+ggplot(winnersc_by_country) +
+  geom_bar(aes(x=reorder(c_country, races_won),y=races_won),stat="identity") +
+  coord_flip() +
+  ggtitle("Paises Fabricantes Ganadores de la formula 1") +
+  xlab("Cantidad") +
+  ylab("País")
+```
+Los comportamientos obtenidos entregan una fuerte dominación por parte de los pilotos y vehiculos británicos Especialmente los fabricantes del Reino unido, cuyos vehiculos han ganado mas de la mitad de las competiciones (492 de 979 carreras, un 50,25%).
+
+# Temática del problema.
+
+Se desea encontrar diferentes relaciones entre las victorias de las marcas fabricantes, nacionalidades de los competidores y lugar de la carrera, para conocer que país y fabricante tiene dominio en la competencia de cada área. Por ejemplo en el siguiente gráfico se ve cuantos países han ganado en un circuito realizado en Italia.
+
+```{r}
+Italian_races <- racesByCircuit[racesByCircuit$country == "Italy",]
+Italian_races_winners <- merge(Italian_races, winners, by="raceId")
+Italian_races_winners <- Italian_races_winners[,c("driverId","constructorId","position")]
+Italian_races_winners <- merge(Italian_races_winners, d_nationality, by="driverId")
+Italian_races_winners <- merge(Italian_races_winners, c_nationality, by="constructorId")
+Italian_d_Nationality_winners <- aggregate(position ~ country, Italian_races_winners, length)
+Italian_c_Nationality_winners <- aggregate(position ~ c_country, Italian_races_winners, length)
+names(Italian_d_Nationality_winners)[names(Italian_d_Nationality_winners) == "position"] <- "races_won"
+names(Italian_c_Nationality_winners)[names(Italian_c_Nationality_winners) == "position"] <- "races_won"
+ggplot(Italian_d_Nationality_winners)+
+  geom_bar(aes(x=reorder(country,races_won),y=races_won),stat = "identity")+
+  ggtitle("Paises ganadores en Italia")+
+  coord_flip()+
+  xlab("País")+
+  ylab("Cantidad de victorias")
+
+```
+Gráfico con los países fabricantes ganadores en Italia
+```{r}
+ggplot(Italian_c_Nationality_winners)+
+  geom_bar(aes(x=reorder(c_country,races_won),y=races_won),stat = "identity")+
+  ggtitle("Paises fabricantes ganadores en Italia")+
+  coord_flip()+
+  xlab("País")+
+  ylab("Cantidad de victorias")
+```
+Se espera tener gráficos de esta forma para averiguar si existe alguna relación entre la nacionalidad del piloto y el lugar donde se realiza la carrera. Para este caso se tiene que para los circuitos desarrollados en Italia, se ve claramente que los competidores y vehiculos britanicos poseen una gran cantidad de victorias. Tambien se desea ver si ha existido dominio de otro país en alguna época. Para ello se realizaran diversas consultas en los dataframes con la finalidad de encontrar comportamientos que apoyen o refuten esta hipótesis.
+
+
+# Contribuciones de los miembros del equipo
+
+En conjunto se escogio la hipotesis a enfrentar en este proyecto .
+
+Ignacio Moore estuvo a cargo de la importacion y limpieza de datos, tambien realizo el analisis de los primeros tres graficos.
+
+
+
+
+
+
