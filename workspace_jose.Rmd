@@ -229,7 +229,7 @@ for (k in races_array){
     driver = i # Piloto
     Lap_mean = driver_race_mean(driver, race, lapTimes) # Tiempo de Vuelta Promedio (milisegundos)
     pitstop_mean = driver_race_mean(driver, race, pitStops) # Tiempo pitstop promedio (milisegundos)
-    if (is.nan(Lap_mean) & is.nan(pitstop_mean)){ # COndición para eliminar las carreras en las que el piloto no participó
+    if (is.nan(Lap_mean) & is.nan(pitstop_mean)){ # Condición para eliminar las carreras en las que el piloto no participó
       next
     }
     result_sample = results[results$raceId == race & results$driverId == driver, ] # Extrayendo información del dataset result.
@@ -246,11 +246,110 @@ head(df_stats)
 write.csv(df_stats, "df_stats.csv") # Guardando el dataframe creado en un archivo .csv
 ```
 
+```{r}
+races_id <- df_stats$Race_id
+circuitId <- c()
+for (k in races_id){
+  circuit_data <- races[races$raceId == k,]
+  circuit_id <- circuit_data$circuitId
+  circuitId <- c(circuitId, circuit_id)
+}
+```
+
+Inclusión del id del circuito al dataframe creado.
+
+```{r}
+df_stats_2 <- cbind(circuitId, df_stats)
+head(df_stats_2)
+```
 
 
+```{r}
+df_stats$circuit_id <- array_circuitId
+head(df_stats)
+```
+
+```{r}
+head(pitStops)
+```
 
 
+```{r}
+head(races)
+```
 
 
+```{r}
+head(results)
+```
+
+```{r}
+# Importando las librerías para la aplicación de dbscan.
+library("dbscan")  
+library("ggplot2")
+```
+
+```{r}
+init_pos <- results$grid
+final_status <- results$statusId
+relation_df <- data.frame(grid=init_pos,status=final_status)
+relation_df2 <- data.frame(status=final_status, grid=init_pos)
+head(relation_df)
+```
+
+```{r}
+grid_accident_df <- relation_df[relation_df$grid > 20 & relation_df$grid < 30,]
+rownames(grid_accident_df) <- NULL
+head(grid_accident_df)
+```
+
+```{r}
+dbscan::kNNdistplot(grid_accident_df, k=3)   # k vecinos
+abline(h=1, lty=2, col="red")  # ajuste h
+
+```
+
+```{r}
+# Configurando dbscan para analizar si existen clusters mediante este método.
+db_grid_st <- dbscan(grid_accident_df[, c(1,2)], eps=2.5 , minPts = 5)
+
+# Ploteo del gráfico del clustering.
+
+library(ggplot2)
+grid_accident_df$cluster <- factor(db_grid_st$cluster)
+ggplot(grid_accident_df, aes(x=grid, y=status, colour=cluster)) + ggtitle("Dbscan para grid entre 10 y 20") + geom_point() #+ png("grid_status.png")
+```
+
+Densidad de status para cada posicion grid obtenida, estas se realizan mediante un diagrama de cajas.
+
+```{r}
+plot(grid_accident_df$grid, grid_accident_df$status, main="Densidad de stats", xlab="grid", ylab="status")
+```
+
+```{r}
+plot(relation_df$grid, relation_df$status, main="Densidad de stats", xlab="grid", ylab="status")
+```
+
+```{r}
+#png("Status_density.png")
+boxplot(status~grid, data=relation_df, main="Densidades de status",xlab = "posición inicial",ylab = "Status", col="orange",border="brown" ,outline=TRUE)
+```
+
+```{r}
+dbscan::kNNdistplot(relation_df, k=3)   # k vecinos
+abline(h=2.8, lty=2, col="red")  # ajuste h
+```
+
+
+```{r}
+# Configurando dbscan para analizar si existen clusters mediante este método.
+db_grid_st <- dbscan(relation_df[, c(1,2)], eps=2.5 , minPts = 5)
+
+# Ploteo del gráfico del clustering.
+
+library(ggplot2)
+relation_df$cluster <- factor(db_grid_st$cluster)
+ggplot(relation_df, aes(x=grid, y=status, colour=cluster)) + geom_point()
+```
 
 
