@@ -95,7 +95,177 @@ library(dplyr)
 by_circiuit <- group_by(races_pitStops_drivers_results_constructors_circuits, .dots=c("circuitId", "circuitName", "stop"))
 
 av_lap_for_pitStop <- summarize(by_circiuit, mean_pit_lap=mean(lap))
+av_lap_for_pitStop <- av_lap_for_pitStop[av_lap_for_pitStop$stop == 1,]
+plot(av_lap_for_pitStop$circuitName, av_lap_for_pitStop$mean_pit_lap)
 av_lap_for_pitStop
+
+names(races_pitStops_drivers_results_constructors_circuits)
+
+asdf <- races_pitStops_drivers_results_constructors_circuits[c("stop", "lap", "year")]
+#asdf <- asdf[asdf$stop==1,]
+
+asdf <- asdf[asdf$stop==1,]
+plot(asdf$year, asdf$lap)
+
+#lapTimes[lapTimes$raceId==841 & lapTimes$driverId==816, ]
+#pitStops[pitStops$raceId==841 & pitStops$driverId==816, ]
+
 
 
 ```
+
+
+```{r}
+results
+starting_grid_analysis <- results[,c("grid", "position", "driverId", "raceId", "statusId")]
+
+starting_grid_analysis <- merge(starting_grid_analysis, status, by="statusId")
+starting_grid_analysis[starting_grid_analysis$statusId != 1, ]
+
+starting_grid_analysis[starting_grid_analysis$statusId==3 | starting_grid_analysis$statusId==4 | starting_grid_analysis$statusId==130, ]
+
+nrow(starting_grid_analysis[starting_grid_analysis$statusId==3,])
+nrow(starting_grid_analysis[starting_grid_analysis$statusId==4,])
+nrow(starting_grid_analysis[starting_grid_analysis$statusId==130,])
+
+starting_grid_analysis[starting_grid_analysis$position.is.nan,]
+sort(unique(starting_grid_analysis$statusId))
+status
+
+sum(is.na(starting_grid_analysis[starting_grid_analysis$statusId==3,]$position))
+sum(is.na(starting_grid_analysis[starting_grid_analysis$statusId==4,]$position))
+sum(is.na(starting_grid_analysis[starting_grid_analysis$statusId==130,]$position))
+
+acc_col_results <- starting_grid_analysis[starting_grid_analysis$statusId==3 |
+                                          starting_grid_analysis$statusId==4 |
+                                          starting_grid_analysis$statusId==130,]
+
+require(dplyr)
+
+acc_col_grid <- acc_col_results %>% count(grid)
+
+results %>% count(grid)
+
+starting_grid_analysis <- merge(results, status, by="statusId")
+starting_grid_analysis <- starting_grid_analysis[, c("grid", "position", "driverId", "raceId", "statusId", "status")]
+
+library(ggplot2)
+
+ggplot(acc_col_grid) +
+  geom_bar(aes(x=grid, y=n), stat = "identity")
+
+```
+
+
+
+
+
+
+
+
+
+
+Probabilidad de chocar o tener un accidente dependiendo de la posicion en que se inicia la carrera.
+
+```{r}
+
+require(dplyr)
+library(ggplot2)
+
+total_races <- results %>% count(grid)
+names(total_races)[names(total_races) == "n"] <- "total"
+
+dnfs <- results[results$statusId == 3 |
+                results$statusId == 4 |
+                results$statusId == 130,]
+dnfs <- dnfs %>% count(grid)
+names(dnfs)[names(dnfs) == "n"] <- "dnfs"
+
+
+calc <- merge(total_races, dnfs, by = "grid")
+calc$dnf_probability <- (calc$dnfs/calc$total)*100
+
+ggplot(calc) +
+  geom_bar(aes(x=grid, y=dnf_probability), stat = "identity") +
+  xlab("Posicion en que se inicia la carrera") +
+  ylab("Porcentage de no terminar la carrera") +
+  ggtitle("Probabilidad de chocar o tener un accidente")
+
+```
+
+
+
+
+Grid postion and finishing position relation
+```{r}
+require(dplyr)
+library(ggplot2)
+
+grid_position <- results[, c("grid", "position")]
+total_grid_starts <- grid_position %>% count(grid)
+names(total_grid_starts)[names(total_grid_starts) == "n"] <- "number_of_starts"
+total_grid_finishes <- grid_position %>% count(grid, position)
+names(total_grid_finishes)[names(total_grid_finishes) == "n"] <- "number_of_finishes"
+
+gp_analysis <- merge(total_grid_starts, total_grid_finishes, by = "grid")
+gp_analysis$fs_probability <- (gp_analysis$number_of_finishes / gp_analysis$number_of_starts) * 100
+
+ggplot(gp_analysis, aes(x=grid, y=position)) +
+  geom_point(aes(size=fs_probability, color=fs_probability))
+
+```
+
+
+
+
+
+
+Classification attempt
+
+```{r}
+
+install.packages("rpart")
+install.packages("rpart.plot")
+install.packages("party")
+library("rpart")
+library("rpart.plot")
+library(party)
+
+races_results <- merge(races, results, by = "raceId")
+races_results <- races_results[, c("year", "grid", "constructorId", "driverId", "circuitId", "position")]
+
+
+train = races_results[races_results$year < 2017,]
+test = races_results[races_results$year == 2017, ]
+target = position ~ year + grid + constructorId + driverId + circuitId
+
+tree = rpart(target, data = train, method = "class")
+
+rpart.plot(tree)
+
+predictions = predict(tree, test)
+table(predictions, races_results$position)
+
+
+tree2 = ctree(position ~ ., data = races_results)
+table(predict(tree2, races_results$position))
+
+head(train)
+head(target)
+```
+
+
+
+
+
+
+```{r setup, include=FALSE}
+library(reticulate)
+use_python("C:\Users\iggym\Documents\Introduccion a la Mineria de Datos\New Stuff\venv")
+
+
+
+```
+
+
+
